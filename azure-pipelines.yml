@@ -35,7 +35,7 @@ stages:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: $(ARM_SUBSCRIPTION_ID)
+            azureSubscription: AzSubs2
             addSpnToEnvironment: true
             scriptType: bash
             scriptLocation: inlineScript
