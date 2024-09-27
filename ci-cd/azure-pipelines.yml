@@ -6,12 +6,10 @@ trigger:
       - prod
 
 variables:
+  group: databricks-multienv-poc
   DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
   DATABRICKS_INSTANCES_PRE: 'https://adb-663046516257182.2.azuredatabricks.net'
   DATABRICKS_INSTANCES_PROD: 'https://adb-4429969223117054.14.azuredatabricks.net'
-
-  DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-  DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
   REPO_PATH: '/Repos/GitHub/databricks-etl-sample'
 
@@ -68,7 +66,7 @@ stages:
             # Update the Databricks Git folder using the OAuth token and repo_path
             curl --request GET \
               --header "Authorization: Bearer ${OAUTH_TOKEN}" \
-              "https://accounts.cloud.databricks.com/api/2.0/accounts/${ARM_CLIENT_ID}/workspaces"
+              "https://accounts.cloud.databricks.com/api/2.0/accounts/${DATABRICKS_CLIENT_ID}/workspaces"
             
             databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
           displayName: 'Update Databricks Git Folder'
