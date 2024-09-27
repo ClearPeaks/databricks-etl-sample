@@ -53,6 +53,7 @@ stages:
               --header "Content-Type: application/x-www-form-urlencoded" \
               --data "client_id=${DATABRICKS_CLIENT_ID}&client_secret=${DATABRICKS_CLIENT_SECRET}&grant_type=client_credentials" \
               https://accounts.cloud.databricks.com/api/2.0/token)
+              echo $OAUTH_TOKEN
             
             export OAUTH_TOKEN=$(echo $OAUTH_TOKEN | jq -r '.access_token')
             echo "##vso[task.setvariable variable=OAUTH_TOKEN]$OAUTH_TOKEN"
