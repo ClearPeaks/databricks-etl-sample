@@ -2,8 +2,8 @@ trigger:
   branches:
     include:
       - dev
-      - pre
-      - prod
+      # - pre
+      # - prod
 
 variables:
   group: databricks-multienv-poc
@@ -46,6 +46,14 @@ stages:
             echo "Databricks host set to: $DATABRICKS_HOST"
             echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $DATABRICKS_HOST
+            echo $OAUTH_TOKEN
+            # echo "$DATABRICKS_HOST $OAUTH_TOKEN" | databricks configure --token
+            databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
+          displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |            
             databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
