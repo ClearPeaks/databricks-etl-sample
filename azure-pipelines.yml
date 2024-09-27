@@ -16,7 +16,6 @@ variables:
   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
   ARM_TENANT_ID: $(ARM_TENANT_ID)
-  # DATABRICKS_TENANT_ID: $(DATABRICKS_TENANT_ID)
 
   REPO_PATH: '/Repos/GitHub/databricks-etl'
 
@@ -39,12 +38,12 @@ stages:
         - checkout: self
         - script: |
             # Set the correct Databricks host based on the branch
-            if [[ "$(Build.SourceBranch)" == "refs/heads/dev" ]]; then
-              export DATABRICKS_HOST=$(DATABRICKS_INSTANCES_DEV)
-            elif [[ "$(Build.SourceBranch)" == "refs/heads/pre" ]]; then
-              export DATABRICKS_HOST=$(DATABRICKS_INSTANCES_PRE)
-            elif [[ "$(Build.SourceBranch)" == "refs/heads/prod" ]]; then
-              export DATABRICKS_HOST=$(DATABRICKS_INSTANCES_PROD)
+            if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
             else
               echo "Unknown branch"
               exit 1
@@ -57,7 +56,7 @@ stages:
             # Get OAuth token for Databricks API
             OAUTH_TOKEN=$(curl --request POST \
               --header "Content-Type: application/x-www-form-urlencoded" \
-              --data "client_id=$(DATABRICKS_CLIENT_ID)&client_secret=$(DATABRICKS_CLIENT_SECRET)&grant_type=client_credentials" \
+              --data "client_id=${DATABRICKS_CLIENT_ID}&client_secret=${DATABRICKS_CLIENT_SECRET}&grant_type=client_credentials" \
               https://accounts.cloud.databricks.com/api/2.0/token)
             
             export OAUTH_TOKEN=$(echo $OAUTH_TOKEN | jq -r '.access_token')
@@ -66,16 +65,16 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            databricks configure --aad-token $OAUTH_TOKEN --host $DATABRICKS_HOST
+            databricks configure --token --host $DATABRICKS_HOST
           displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
             # Update the Databricks Git folder using the OAuth token and repo_path
             curl --request GET \
-              --header "Authorization: Bearer $OAUTH_TOKEN" \
-              "https://accounts.cloud.databricks.com/api/2.0/accounts/$(ARM_CLIENT_ID)/workspaces"
+              --header "Authorization: Bearer ${OAUTH_TOKEN}" \
+              "https://accounts.cloud.databricks.com/api/2.0/accounts/${ARM_CLIENT_ID}/workspaces"
             
-            databricks repos update --path $REPO_PATH --branch "$(Build.SourceBranchName)"
+            databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
           displayName: 'Update Databricks Git Folder'
       
       condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], 'refs/heads/pre'), eq(variables['Build.SourceBranch'], 'refs/heads/prod')))
