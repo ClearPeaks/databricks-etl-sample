@@ -47,32 +47,7 @@ stages:
             echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host'
 
-        - script: |
-            # Get OAuth token for Databricks API
-            OAUTH_TOKEN=$(curl --request POST \
-              --header "Content-Type: application/x-www-form-urlencoded" \
-              --data "client_id=${DATABRICKS_CLIENT_ID}&client_secret=${DATABRICKS_CLIENT_SECRET}&grant_type=client_credentials" \
-              https://accounts.cloud.databricks.com/api/2.0/token)
-              echo $OAUTH_TOKEN
-            
-            export OAUTH_TOKEN=$(echo $OAUTH_TOKEN | jq -r '.access_token')
-            echo "##vso[task.setvariable variable=OAUTH_TOKEN]$OAUTH_TOKEN"
-          displayName: 'Get OAuth Token'
-
-        - script: |
-            # Authenticate using the OAuth token for Databricks CLI
-            echo $DATABRICKS_HOST
-            echo $OAUTH_TOKEN
-            # echo "$DATABRICKS_HOST $OAUTH_TOKEN" | databricks configure --token
-            databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
-          displayName: 'Configure Databricks CLI with OAuth Token'
-
-        - script: |
-            # Update the Databricks Git folder using the OAuth token and repo_path
-            curl --request GET \
-              --header "Authorization: Bearer ${OAUTH_TOKEN}" \
-              "https://accounts.cloud.databricks.com/api/2.0/accounts/${DATABRICKS_CLIENT_ID}/workspaces"
-            
+        - script: |            
             databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
           displayName: 'Update Databricks Git Folder'
       
