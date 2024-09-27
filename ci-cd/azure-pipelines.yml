@@ -1,0 +1,62 @@
+trigger:
+  branches:
+    include:
+      - dev
+      # - pre
+      # - prod
+
+variables:
+  group: databricks-multienv-poc
+  DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
+  DATABRICKS_INSTANCES_PRE: 'https://adb-663046516257182.2.azuredatabricks.net'
+  DATABRICKS_INSTANCES_PROD: 'https://adb-4429969223117054.14.azuredatabricks.net'
+
+  REPO_PATH: '/Repos/GitHub/databricks-etl-sample'
+
+
+stages:
+- stage: Deploy
+  displayName: 'Deploy to Databricks Environments'
+  jobs:
+    - job: DeployJob
+      displayName: 'Deploy to Databricks'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq'
+
+        - checkout: self
+        - script: |
+            # Set the correct Databricks host based on the branch
+            if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
+            else
+              echo "Unknown branch"
+              exit 1
+            fi
+            echo "Databricks host set to: $DATABRICKS_HOST"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $DATABRICKS_HOST
+            echo $OAUTH_TOKEN
+            # echo "$DATABRICKS_HOST $OAUTH_TOKEN" | databricks configure --token
+            databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
+          displayName: 'Configure Databricks CLI with OAuth Token'
+
+        - script: |            
+            databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
+          displayName: 'Update Databricks Git Folder'
+      
+      condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], 'refs/heads/pre'), eq(variables['Build.SourceBranch'], 'refs/heads/prod')))
