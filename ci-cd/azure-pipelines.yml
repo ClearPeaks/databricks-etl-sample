@@ -3,7 +3,6 @@ trigger:
     include:
       - dev
       - pre
-      - prod
 
 variables:
   DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
@@ -12,12 +11,8 @@ variables:
 
   DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
   DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  ARM_TENANT_ID: $(ARM_TENANT_ID)
 
-  REPO_PATH: '/Repos/GitHub/databricks-etl'
+  REPO_PATH: '/Repos/GitHub/databricks-etl-sample'
 
 stages:
 - stage: Deploy
@@ -65,7 +60,7 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            databricks configure --token --host $DATABRICKS_HOST
+            echo "${{ $DATABRICKS_HOST }} ${{ OAUTH_TOKEN }}" | databricks configure --token
           displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
