@@ -3,6 +3,7 @@ trigger:
     include:
       - dev
       - pre
+      - prod
 
 variables:
   DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
