@@ -13,6 +13,7 @@ variables:
 
   REPO_PATH: '/Repos/GitHub/databricks-etl-sample'
 
+
 stages:
 - stage: Deploy
   displayName: 'Deploy to Databricks Environments'
@@ -59,7 +60,7 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            echo "${{ $DATABRICKS_HOST }} ${{ OAUTH_TOKEN }}" | databricks configure --token
+            echo "$DATABRICKS_HOST $OAUTH_TOKEN" | databricks configure --token
           displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
