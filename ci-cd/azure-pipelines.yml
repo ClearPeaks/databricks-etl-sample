@@ -46,6 +46,11 @@ stages:
             echo "Databricks host set to: $DATABRICKS_HOST"
             echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host'
+          
+        - script: |
+            echo "Current branch: ${BUILD_SOURCEBRANCH}"
+            echo "Databricks host: ${DATABRICKS_HOST}"
+          displayName: 'Debug Branch and Host'
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
