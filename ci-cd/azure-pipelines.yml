@@ -36,6 +36,7 @@ stages:
             # Set the correct Databricks host based on the branch
             if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+              echo "Databricks host: ${DATABRICKS_HOST}"
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
