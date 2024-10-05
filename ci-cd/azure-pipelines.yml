@@ -31,6 +31,7 @@ stages:
           displayName: 'Install Databricks CLI and jq'
 
         - checkout: self
+
         - script: |
             # Set the correct Databricks host based on the branch
             if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
@@ -44,9 +45,9 @@ stages:
               exit 1
             fi
             echo "Databricks host set to: $DATABRICKS_HOST"
-            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host'
-          
+
+        # Debugging step to check if branch and host are set properly
         - script: |
             echo "Current branch: ${BUILD_SOURCEBRANCH}"
             echo "Databricks host: ${DATABRICKS_HOST}"
@@ -56,11 +57,16 @@ stages:
             # Authenticate using the OAuth token for Databricks CLI
             echo $DATABRICKS_HOST
             echo $OAUTH_TOKEN
-            # echo "$DATABRICKS_HOST $OAUTH_TOKEN" | databricks configure --token
             databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
           displayName: 'Configure Databricks CLI with OAuth Token'
 
-        - script: |            
+        - script: |
+            # Ensure DATABRICKS_HOST is exported correctly
+            export DATABRICKS_HOST=${DATABRICKS_HOST}
+            echo "Using Databricks host: $DATABRICKS_HOST"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
             databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
           displayName: 'Update Databricks Git Folder'
       
