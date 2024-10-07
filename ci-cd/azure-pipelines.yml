@@ -27,6 +27,7 @@ stages:
             pip install databricks-cli
           displayName: 'Install Databricks CLI and jq'
 
+
         - checkout: self
 
         - script: |
