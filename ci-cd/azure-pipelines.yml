@@ -2,8 +2,8 @@ trigger:
   branches:
     include:
       - dev
-      # - pre
-      # - prod
+      - pre
+      - prod
 
 variables:
   group: databricks-multienv-poc
@@ -58,7 +58,7 @@ stages:
           displayName: 'Debug Branch and Host'
 
         - script: |
-            # Authenticate using the OAuth token for Databricks CLI
+            # Authenticate using the OAuth token for Databricks CLI 
             echo "Authenticating Databricks CLI with host: $DATABRICKS_HOST"
             databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
           displayName: 'Configure Databricks CLI with OAuth Token'
