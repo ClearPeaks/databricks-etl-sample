@@ -39,34 +39,33 @@ stages:
 
             # Set the correct Databricks host based on the branch
             if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_DEV}"
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PRE}"
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PROD}"
             else
               echo "Unknown branch: ${BUILD_SOURCEBRANCH}. Setting default Databricks host."
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV} # Default to dev if no match
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_DEV}"
             fi
-            echo "Databricks host set to: $DATABRICKS_HOST"
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
           displayName: 'Set Databricks Host'
 
         # Debugging step to check if branch and host are set properly
         - script: |
             echo "Current branch: ${BUILD_SOURCEBRANCH}"
-            echo "Databricks host: ${DATABRICKS_HOST}"
+            echo "Databricks host: $(DATABRICKS_HOST)"
           displayName: 'Debug Branch and Host'
 
         - script: |
-            # Authenticate using the OAuth token for Databricks CLI 
-            echo "Authenticating Databricks CLI with host: $DATABRICKS_HOST"
-            databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
+            # Authenticate using the OAuth token for Databricks CLI
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token $OAUTH_TOKEN 
           displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
             # Ensure DATABRICKS_HOST is exported correctly
-            export DATABRICKS_HOST=${DATABRICKS_HOST}
-            echo "Using Databricks host: $DATABRICKS_HOST"
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
