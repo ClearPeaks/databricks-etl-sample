@@ -1,13 +1,12 @@
 trigger:
   branches:
     include:
-      # - dev
-      # - pre
+      - dev
+      - pre
       - prod
 
 variables:
-  # group: databricks-multienv-poc
-  - group: databricks-multienv-poc-1
+  - group: databricks-multienv-poc-1 #need to rename it
 
 
 
