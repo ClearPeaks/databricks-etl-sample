@@ -6,7 +6,8 @@ trigger:
       - prod
 
 variables:
-  group: databricks-multienv-poc
+  # group: databricks-multienv-poc
+  group: databricks-multienv-poc-1
   DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
   DATABRICKS_INSTANCES_PRE: 'https://adb-663046516257182.2.azuredatabricks.net'
   DATABRICKS_INSTANCES_PROD: 'https://adb-4429969223117054.14.azuredatabricks.net'
