@@ -59,9 +59,9 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            echo $DATABRICKS_TOKEN
+            echo "OAUTH TOKEN :  $(OAUTH_TOKEN)"
             echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
-            databricks configure --host $(DATABRICKS_HOST) --token $DATABRICKS_TOKEN 
+            databricks configure --host $(DATABRICKS_HOST) --token $OAUTH_TOKEN 
           displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
