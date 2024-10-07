@@ -1,8 +1,8 @@
 trigger:
   branches:
     include:
-      - dev
-      - pre
+      # - dev
+      # - pre
       - prod
 
 variables:
