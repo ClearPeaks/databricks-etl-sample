@@ -33,17 +33,20 @@ stages:
         - checkout: self
 
         - script: |
+            # Print current branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
             # Set the correct Databricks host based on the branch
             if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
-              echo "Databricks host: ${DATABRICKS_HOST}"
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
             elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
             else
-              echo "Unknown branch"
-              exit 1
+              echo "Unknown branch: ${BUILD_SOURCEBRANCH}. Setting default Databricks host."
+              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV} # Default to dev if no match
             fi
             echo "Databricks host set to: $DATABRICKS_HOST"
           displayName: 'Set Databricks Host'
@@ -56,8 +59,7 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            echo $DATABRICKS_HOST
-            echo $OAUTH_TOKEN
+            echo "Authenticating Databricks CLI with host: $DATABRICKS_HOST"
             databricks configure --host $DATABRICKS_HOST --token $OAUTH_TOKEN 
           displayName: 'Configure Databricks CLI with OAuth Token'
 
