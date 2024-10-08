@@ -20,7 +20,7 @@ stages:
               pip install databricks-cli
             displayName: Install Databricks CLI and jq
           - checkout: self
-          - script: >
+          - script: |
               # Print branch details for debugging
 
               echo "Current source branch: ${BUILD_SOURCEBRANCH}"
@@ -35,7 +35,7 @@ stages:
 
               echo "Databricks host set to: $(DATABRICKS_HOST)"
             displayName: Set Databricks Host for Dev
-          - script: >
+          - script: |
               # Authenticate using the OAuth token for Databricks CLI
 
               echo $OAUTH_TOKEN_DEV > token-file
@@ -45,7 +45,7 @@ stages:
               databricks configure --host $(DATABRICKS_HOST) --token-file
               token-file
             displayName: Configure Databricks CLI with OAuth Token for Dev
-          - script: >
+          - script: |
               # Update Databricks repository to the current branch
 
               echo "Using Databricks host: $(DATABRICKS_HOST)"
@@ -74,7 +74,7 @@ stages:
               pip install databricks-cli
             displayName: Install Databricks CLI and jq for Pre
           - checkout: self
-          - script: >
+          - script: |
               # Print branch details for debugging
 
               echo "Current source branch: ${BUILD_SOURCEBRANCH}"
@@ -89,7 +89,7 @@ stages:
 
               echo "Databricks host set to: $(DATABRICKS_HOST)"
             displayName: Set Databricks Host for Pre
-          - script: >
+          - script: |
               # Authenticate using the OAuth token for Databricks CLI
 
               echo $OAUTH_TOKEN_PRE > token-file
@@ -99,7 +99,7 @@ stages:
               databricks configure --host $(DATABRICKS_HOST) --token-file
               token-file
             displayName: Configure Databricks CLI with OAuth Token for Pre
-          - script: >
+          - script: |
               # Update Databricks repository to the current branch
 
               echo "Using Databricks host: $(DATABRICKS_HOST)"
@@ -128,7 +128,7 @@ stages:
               pip install databricks-cli
             displayName: Install Databricks CLI and jq for Prod
           - checkout: self
-          - script: >
+          - script: |
               # Print branch details for debugging
 
               echo "Current source branch: ${BUILD_SOURCEBRANCH}"
@@ -143,7 +143,7 @@ stages:
 
               echo "Databricks host set to: $(DATABRICKS_HOST)"
             displayName: Set Databricks Host for Prod
-          - script: >
+          - script: |
               # Authenticate using the OAuth token for Databricks CLI
 
               echo $OAUTH_TOKEN > token-file
@@ -153,7 +153,7 @@ stages:
               databricks configure --host $(DATABRICKS_HOST) --token-file
               token-file
             displayName: Configure Databricks CLI with OAuth Token for Prod
-          - script: >
+          - script: |
               # Update Databricks repository to the current branch
 
               echo "Using Databricks host: $(DATABRICKS_HOST)"
