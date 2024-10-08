@@ -95,7 +95,7 @@ stages:
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
             databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
-          displayName: 'Update Databricks Git Folder for Pre'
+          displayName: 'Update Databricks Git Folder for Pre' 
 
 # Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
 - stage: Prod
