@@ -21,7 +21,7 @@ stages:
             # Install Databricks CLI and jq
             sudo apt-get update
             sudo apt-get install -y jq
-            pip install databricks-cli-2
+            pip install databricks-cli
           displayName: 'Install Databricks CLI and jq'
 
         - checkout: self
@@ -67,7 +67,7 @@ stages:
             # Install Databricks CLI and jq
             sudo apt-get update
             sudo apt-get install -y jq
-            pip install databricks-cli-2
+            pip install databricks-cli
           displayName: 'Install Databricks CLI and jq for Pre'
 
         - checkout: self
@@ -113,7 +113,7 @@ stages:
             # Install Databricks CLI and jq
             sudo apt-get update
             sudo apt-get install -y jq
-            pip install databricks-cli-2
+            pip install databricks-cli
           displayName: 'Install Databricks CLI and jq for Prod'
 
         - checkout: self
