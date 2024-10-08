@@ -50,7 +50,7 @@ stages:
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch dev
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
           displayName: 'Update Databricks Git Folder for Dev'
 
 # Stage 2: Deploy to Pre environment (depends on successful Dev deployment)
@@ -96,7 +96,7 @@ stages:
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch pre
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
           displayName: 'Update Databricks Git Folder for Pre'
 
 # Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
@@ -142,5 +142,5 @@ stages:
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch prod
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
           displayName: 'Update Databricks Git Folder for Prod'
