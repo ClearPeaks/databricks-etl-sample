@@ -1,25 +1,19 @@
 trigger:
   branches:
     include:
-      - dev
-      # - pre
-      # - prod
+      - dev  # Trigger pipeline from dev branch, but it will deploy to all environments sequentially
 
 variables:
-  group: databricks-multienv-poc
-  DATABRICKS_INSTANCES_DEV: 'https://adb-554199305656512.12.azuredatabricks.net'
-  DATABRICKS_INSTANCES_PRE: 'https://adb-663046516257182.2.azuredatabricks.net'
-  DATABRICKS_INSTANCES_PROD: 'https://adb-4429969223117054.14.azuredatabricks.net'
-
-  REPO_PATH: '/Repos/GitHub/databricks-etl-sample'
-
+  - group: databricks-multienv-poc-1  # Group containing environment variables for Databricks
 
 stages:
-- stage: Deploy
-  displayName: 'Deploy to Databricks Environments'
+
+# Stage 1: Deploy to Dev environment
+- stage: Dev
+  displayName: 'Deploy to Dev Databricks Environment'
   jobs:
-    - job: DeployJob
-      displayName: 'Deploy to Databricks'
+    - job: DeployDevJob
+      displayName: 'Deploy to Dev'
       pool:
         vmImage: 'ubuntu-latest'
       steps:
@@ -31,36 +25,122 @@ stages:
           displayName: 'Install Databricks CLI and jq'
 
         - checkout: self
-        # - script: |
-        #     # Set the correct Databricks host based on the branch
-        #     if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
-        #       export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
-        #     elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
-        #       export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
-        #     elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
-        #       export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
-        #     else
-        #       echo "Unknown branch"
-        #       exit 1
-        #     fi
-        #     echo "Databricks host set to: $DATABRICKS_HOST"
-        #     echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
-        #   displayName: 'Set Databricks Host'
 
-        # - script: |
-        #     # Authenticate using the OAuth token for Databricks CLI
-        #     echo $DATABRICKS_HOST
-        #     echo $OAUTH_TOKEN
-        #     # echo "$DATABRICKS_HOST $DATABRICKS_TOKEN" | databricks configure --token
-        #     databricks configure --host $DATABRICKS_HOST --token $DATABRICKS_TOKEN 
-        #   displayName: 'Configure Databricks CLI with OAuth Token'
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
 
-        - script: |            
-            databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
-          displayName: 'Update Databricks Git Folder'
-          env:
-            DATABRICKS_HOST: ${DATABRICKS_INSTANCES_DEV}
-            DATABRICKS_TOKEN: ${DATABRICKS_TOKEN}
+            # Set the correct Databricks host for Dev
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+            echo "Databricks host set to: $DATABRICKS_HOST"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Dev'
 
-      
-      condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], 'refs/heads/pre'), eq(variables['Build.SourceBranch'], 'refs/heads/prod')))
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN_DEV > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Dev'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch dev
+          displayName: 'Update Databricks Git Folder for Dev'
+
+# Stage 2: Deploy to Pre environment (depends on successful Dev deployment)
+- stage: Pre
+  displayName: 'Deploy to Pre Databricks Environment'
+  dependsOn: Dev
+  jobs:
+    - job: DeployPreJob
+      displayName: 'Deploy to Pre'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq for Pre'
+
+        - checkout: self
+
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
+            # Set the correct Databricks host for Pre
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Pre'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN_PRE > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Pre'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch pre
+          displayName: 'Update Databricks Git Folder for Pre'
+
+# Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
+- stage: Prod
+  displayName: 'Deploy to Prod Databricks Environment'
+  dependsOn: Pre
+  jobs:
+    - job: DeployProdJob
+      displayName: 'Deploy to Prod'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq for Prod'
+
+        - checkout: self
+
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
+            # Set the correct Databricks host for Prod
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Prod'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Prod'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch prod
+          displayName: 'Update Databricks Git Folder for Prod'
