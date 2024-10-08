@@ -33,8 +33,8 @@ stages:
 
             # Set the correct Databricks host for Dev
             export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
-            echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_DEV}"
-            echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "Databricks host set to: $DATABRICKS_HOST"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host for Dev'
 
         - script: |
@@ -79,8 +79,8 @@ stages:
 
             # Set the correct Databricks host for Pre
             export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
-            echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PRE}"
             echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host for Pre'
 
         - script: |
@@ -125,8 +125,8 @@ stages:
 
             # Set the correct Databricks host for Prod
             export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
-            echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PROD}"
             echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
           displayName: 'Set Databricks Host for Prod'
 
         - script: |
