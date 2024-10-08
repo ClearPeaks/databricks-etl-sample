@@ -49,9 +49,8 @@ stages:
             echo "Using Databricks host: $(DATABRICKS_HOST)"
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
-            echo $OAUTH_TOKEN_DEV > token-file
             
-            databricks repos update --path ${REPO_PATH} --branch dev --token-file token-file
+            databricks repos update --path ${REPO_PATH} --branch dev
           displayName: 'Update Databricks Git Folder for Dev'
 
 # Stage 2: Deploy to Pre environment (depends on successful Dev deployment)
@@ -97,7 +96,7 @@ stages:
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch pre --token ${OAUTH_TOKEN_PRE}
+            databricks repos update --path ${REPO_PATH} --branch pre
           displayName: 'Update Databricks Git Folder for Pre'
 
 # Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
@@ -143,5 +142,5 @@ stages:
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch prod --token ${OAUTH_TOKEN}
+            databricks repos update --path ${REPO_PATH} --branch prod
           displayName: 'Update Databricks Git Folder for Prod'
