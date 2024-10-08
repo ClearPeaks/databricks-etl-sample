@@ -4,7 +4,7 @@ trigger:
       - dev  # Trigger pipeline from dev branch, but it will deploy to all environments sequentially
 
 variables:
-  - group: databricks-multienv-poc-1  # Group containing environment variables for Databricks
+  - group: databricks-multienv-variables  # Group containing environment variables for Databricks
 
 stages:
 
