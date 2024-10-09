@@ -1,7 +1,9 @@
 trigger:
   branches:
     include:
-      - dev  
+      - dev
+      - pre
+      - prod
 
 variables:
   - group: databricks-multienv-variables  # Group containing environment variables for Databricks
