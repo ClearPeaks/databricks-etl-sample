@@ -59,7 +59,7 @@ stages:
 # Stage 2: Deploy to Pre environment (depends on successful Dev deployment)
 - stage: Pre
   displayName: 'Deploy to Pre Databricks Environment'
-  dependsOn: Dev
+  #dependsOn: Dev
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'pre'))  # Run only if 'prod' branch is pushed
   jobs:
     - job: DeployPreJob
@@ -106,7 +106,7 @@ stages:
 # Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
 - stage: Prod
   displayName: 'Deploy to Prod Databricks Environment'
-  dependsOn: Pre
+  #dependsOn: Pre
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'prod'))  # Run only if 'prod' branch is pushed
   jobs:
     - job: DeployProdJob
