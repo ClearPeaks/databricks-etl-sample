@@ -60,7 +60,6 @@ stages:
 - stage: Pre
   displayName: 'Deploy to Pre Databricks Environment'
   #dependsOn: Dev
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/pre'))
   jobs:
     - job: DeployPreJob
       displayName: 'Deploy to Pre'
@@ -102,12 +101,12 @@ stages:
             
             databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
           displayName: 'Update Databricks Git Folder for Pre'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/pre'))
 
 # Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
 - stage: Prod
   displayName: 'Deploy to Prod Databricks Environment'
   #dependsOn: Pre
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/prod'))
   jobs:
     - job: DeployProdJob
       displayName: 'Deploy to Prod'
@@ -149,3 +148,4 @@ stages:
             
             databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
           displayName: 'Update Databricks Git Folder for Prod'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/prod'))
