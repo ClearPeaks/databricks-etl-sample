@@ -30,15 +30,15 @@ stages:
         - script: |
             echo "Current source branch: ${BUILD_SOURCEBRANCHNAME}"
 
-            if [ "${BUILD_SOURCEBRANCHNAME}" == "dev" ]; then
+            if [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/dev" ]; then
               echo "Deploying to Dev environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
               export OAUTH_TOKEN=${OAUTH_TOKEN_DEV}
-            elif [ "${BUILD_SOURCEBRANCHNAME}" == "pre" ]; then
+            elif [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/pre" ]; then
               echo "Deploying to Pre environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
               export OAUTH_TOKEN=${OAUTH_TOKEN_PRE}
-            elif [ "${BUILD_SOURCEBRANCHNAME}" == "prod" ]; then
+            elif [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/prod" ]; then
               echo "Deploying to Prod environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
               export OAUTH_TOKEN=${OAUTH_TOKEN_PROD}
