@@ -6,14 +6,16 @@ trigger:
       - prod
 
 variables:
-  - group: databricks-multienv-variables  # Group containing environment variables for Databricks
+  - group: databricks-multienv-variables
+
+
 
 stages:
 - stage: Deploy
-  displayName: 'Deploy to Databricks Environment'
+  displayName: 'Deploy to Databricks Environments'
   jobs:
     - job: DeployJob
-      displayName: 'Deploy to the appropriate environment'
+      displayName: 'Deploy to Databricks'
       pool:
         vmImage: 'ubuntu-latest'
       steps:
@@ -24,53 +26,58 @@ stages:
             pip install databricks-cli
           displayName: 'Install Databricks CLI and jq'
 
+
         - checkout: self
 
-        # Set the environment-specific variables based on the branch
         - script: |
-            echo "Current source branch: ${BUILD_SOURCEBRANCHNAME}"
+            # Print current branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
 
+            # Set the correct Databricks host based on the branch
+            if [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/dev" ]]; then
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_DEV}"
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/pre" ]]; then
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PRE}"
+            elif [[ "${BUILD_SOURCEBRANCH}" == "refs/heads/prod" ]]; then
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_PROD}"
+            else
+              echo "Unknown branch: ${BUILD_SOURCEBRANCH}. Setting default Databricks host."
+              echo "##vso[task.setvariable variable=DATABRICKS_HOST]${DATABRICKS_INSTANCES_DEV}"
+            fi
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
+          displayName: 'Set Databricks Host'
+
+        # Debugging step to check if branch and host are set properly
+        - script: |
+            echo "Current branch: ${BUILD_SOURCEBRANCH}"
+            echo "Databricks host: $(DATABRICKS_HOST)"
+          displayName: 'Debug Branch and Host'
+
+        - script: |
+            # Set the OAuth token dynamically based on the branch
             if [ "${BUILD_SOURCEBRANCHNAME}" == "dev" ]; then
-              echo "Deploying to Dev environment"
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
-              export OAUTH_TOKEN1=${OAUTH_TOKEN_DEV}
+              OAUTH_TOKEN=${OAUTH_TOKEN_DEV}
             elif [ "${BUILD_SOURCEBRANCHNAME}" == "pre" ]; then
-              echo "Deploying to Pre environment"
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
-              export OAUTH_TOKEN1=${OAUTH_TOKEN_PRE}
+              OAUTH_TOKEN=${OAUTH_TOKEN_PRE}
             elif [ "${BUILD_SOURCEBRANCHNAME}" == "prod" ]; then
-              echo "Deploying to Prod environment"
-              export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
-              export OAUTH_TOKEN1=${OAUTH_TOKEN}
+              OAUTH_TOKEN=${OAUTH_TOKEN_PROD}
             else
               echo "Branch not recognized. Exiting."
               exit 1
             fi
 
-            echo "Databricks host set to: $DATABRICKS_HOST"
-            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
-          displayName: 'Set Databricks Host based on branch'
+			echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+			databricks configure --host $(DATABRICKS_HOST) --token $OAUTH_TOKEN
+		  displayName: 'Configure Databricks CLI with OAuth Token'
 
         - script: |
-            # Authenticate using the OAuth token for Databricks CLI
-            echo $OAUTH_TOKEN1 > token-file
-            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
-            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
-          displayName: 'Configure Databricks CLI with OAuth Token'
-
-        - script: |
-            # Update Databricks repository to the current branch
+            # Ensure DATABRICKS_HOST is exported correctly
             echo "Using Databricks host: $(DATABRICKS_HOST)"
             echo "Repo Path: ${REPO_PATH}"
             echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
             
-            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
+            databricks repos update --path ${REPO_PATH} --branch "${BUILD_SOURCEBRANCHNAME}"
           displayName: 'Update Databricks Git Folder'
-  
-      # Condition to ensure this job only runs for dev, pre, or prod branches
-      condition: |
-        or(
-          and(succeeded(), eq(variables['Build.SourceBranchName'], 'dev')),
-          and(succeeded(), eq(variables['Build.SourceBranchName'], 'pre')),
-          and(succeeded(), eq(variables['Build.SourceBranchName'], 'prod'))
-        )
+      
+      condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], 'refs/heads/pre'), eq(variables['Build.SourceBranch'], 'refs/heads/prod')))
