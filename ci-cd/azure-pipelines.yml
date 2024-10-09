@@ -1,0 +1,149 @@
+trigger:
+  branches:
+    include:
+      - dev  
+
+variables:
+  - group: databricks-multienv-variables  # Group containing environment variables for Databricks
+
+stages:
+
+# Stage 1: Deploy to Dev environment
+- stage: Dev
+  displayName: 'Deploy to Dev Databricks Environment'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'dev'))  # Run only if 'dev' branch is pushed
+  jobs:
+    - job: DeployDevJob
+      displayName: 'Deploy to Dev'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq'
+
+        - checkout: self
+
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
+            # Set the correct Databricks host for Dev
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
+            echo "Databricks host set to: $DATABRICKS_HOST"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Dev'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN_DEV > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Dev'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
+          displayName: 'Update Databricks Git Folder for Dev'
+
+# Stage 2: Deploy to Pre environment (depends on successful Dev deployment)
+- stage: Pre
+  displayName: 'Deploy to Pre Databricks Environment'
+  dependsOn: Dev
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'pre'))  # Run only if 'prod' branch is pushed
+  jobs:
+    - job: DeployPreJob
+      displayName: 'Deploy to Pre'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq for Pre'
+
+        - checkout: self
+
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
+            # Set the correct Databricks host for Pre
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Pre'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN_PRE > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Pre'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
+          displayName: 'Update Databricks Git Folder for Pre'
+
+# Stage 3: Deploy to Prod environment (depends on successful Pre deployment)
+- stage: Prod
+  displayName: 'Deploy to Prod Databricks Environment'
+  dependsOn: Pre
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'prod'))  # Run only if 'prod' branch is pushed
+  jobs:
+    - job: DeployProdJob
+      displayName: 'Deploy to Prod'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            # Install Databricks CLI and jq
+            sudo apt-get update
+            sudo apt-get install -y jq
+            pip install databricks-cli
+          displayName: 'Install Databricks CLI and jq for Prod'
+
+        - checkout: self
+
+        - script: |
+            # Print branch details for debugging
+            echo "Current source branch: ${BUILD_SOURCEBRANCH}"
+            echo "Source branch name: ${BUILD_SOURCEBRANCHNAME}"
+
+            # Set the correct Databricks host for Prod
+            export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
+            echo "Databricks host set to: $(DATABRICKS_HOST)"
+            echo "##vso[task.setvariable variable=DATABRICKS_HOST]$DATABRICKS_HOST"
+          displayName: 'Set Databricks Host for Prod'
+
+        - script: |
+            # Authenticate using the OAuth token for Databricks CLI
+            echo $OAUTH_TOKEN > token-file
+            echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
+            databricks configure --host $(DATABRICKS_HOST) --token-file token-file
+          displayName: 'Configure Databricks CLI with OAuth Token for Prod'
+
+        - script: |
+            # Update Databricks repository to the current branch
+            echo "Using Databricks host: $(DATABRICKS_HOST)"
+            echo "Repo Path: ${REPO_PATH}"
+            echo "Branch: ${BUILD_SOURCEBRANCHNAME}"
+            
+            databricks repos update --path ${REPO_PATH} --branch ${BUILD_SOURCEBRANCHNAME}
+          displayName: 'Update Databricks Git Folder for Prod'
