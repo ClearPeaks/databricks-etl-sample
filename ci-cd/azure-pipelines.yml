@@ -30,18 +30,18 @@ stages:
         - script: |
             echo "Current source branch: ${BUILD_SOURCEBRANCHNAME}"
 
-            if [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/dev" ]; then
+            if [ "${BUILD_SOURCEBRANCHNAME}" == "dev" ]; then
               echo "Deploying to Dev environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_DEV}
-              export OAUTH_TOKEN=${OAUTH_TOKEN_DEV}
-            elif [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/pre" ]; then
+              export OAUTH_TOKEN1=${OAUTH_TOKEN_DEV}
+            elif [ "${BUILD_SOURCEBRANCHNAME}" == "pre" ]; then
               echo "Deploying to Pre environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PRE}
-              export OAUTH_TOKEN=${OAUTH_TOKEN_PRE}
-            elif [ "${BUILD_SOURCEBRANCHNAME}" == "refs/heads/prod" ]; then
+              export OAUTH_TOKEN1=${OAUTH_TOKEN_PRE}
+            elif [ "${BUILD_SOURCEBRANCHNAME}" == "prod" ]; then
               echo "Deploying to Prod environment"
               export DATABRICKS_HOST=${DATABRICKS_INSTANCES_PROD}
-              export OAUTH_TOKEN=${OAUTH_TOKEN_PROD}
+              export OAUTH_TOKEN1=${OAUTH_TOKEN}
             else
               echo "Branch not recognized. Exiting."
               exit 1
@@ -53,7 +53,7 @@ stages:
 
         - script: |
             # Authenticate using the OAuth token for Databricks CLI
-            echo $OAUTH_TOKEN > token-file
+            echo $OAUTH_TOKEN1 > token-file
             echo "Authenticating Databricks CLI with host: $(DATABRICKS_HOST)"
             databricks configure --host $(DATABRICKS_HOST) --token-file token-file
           displayName: 'Configure Databricks CLI with OAuth Token'
