@@ -1,1 +1,1 @@
-print("hello world from databricks workspace! ")
+print("hello world from databricks workspace!")
