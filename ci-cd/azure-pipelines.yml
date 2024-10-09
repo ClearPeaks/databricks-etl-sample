@@ -60,7 +60,7 @@ stages:
 - stage: Pre
   displayName: 'Deploy to Pre Databricks Environment'
   dependsOn: Dev
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'pre'))  # Run only if 'prod' branch is pushed
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/pre'))  # Run only if 'prod' branch is pushed
   jobs:
     - job: DeployPreJob
       displayName: 'Deploy to Pre'
@@ -107,7 +107,7 @@ stages:
 - stage: Prod
   displayName: 'Deploy to Prod Databricks Environment'
   dependsOn: Pre
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'prod'))  # Run only if 'prod' branch is pushed
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'refs/heads/prod'))  # Run only if 'prod' branch is pushed
   jobs:
     - job: DeployProdJob
       displayName: 'Deploy to Prod'
